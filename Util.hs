@@ -13,3 +13,4 @@ negV = mulSV (-1)
 
 subV :: Vector -> Vector -> Vector
 subV v0 v1 = addV v0 (negV v1)
+

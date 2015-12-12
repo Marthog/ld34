@@ -9,6 +9,7 @@ module Plane
 
 import Graphics.Gloss.Data.Vector
 import Graphics.Gloss
+import Graphics.Gloss.Game
 import Util
 
 
@@ -38,12 +39,13 @@ data Plane = Plane
     -- |the angle that the plane points and accelerates into
     ,angle              :: !Float
     ,movement           :: !PlaneMovement
+    ,planeType          :: !Int
     }
 
 
 drawPlane :: Plane -> Picture
 drawPlane Plane{..} =
-        translate x y $ rotate (-angle) plane
+        translate x y $ rotate (-angle) (planes !! planeType)
     where (x,y) = position
 
 
@@ -60,5 +62,5 @@ updatePlane time plane@Plane{..} =
         angleRad = newAngle * pi/180
 
 
-plane :: Picture
-plane = rectangleSolid 5 2
+planes = scale 0.1 0.1 `map` [png $ "images/plane" ++ show i ++ ".png" | i <- [0..]]
+

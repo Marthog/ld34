@@ -7,6 +7,7 @@ import Graphics.Gloss.Data.Point
 import Plane
 import Util
 import World
+import View
 
 
 windowWidthI = 800              :: Int
@@ -15,36 +16,32 @@ windowHeightI = 600             :: Int
 
 
 data Game = Game
-    {widthI         :: !Int
-    ,heightI        :: !Int
+    {view           :: !View
     ,movement       :: !PlaneMovement
     ,player         :: !Plane
     ,otherPlanes    :: [Plane]
     }
     | GameOver
+    {view           :: !View
+    }
 
-width = fromIntegral . widthI       :: Game -> Float
-height = fromIntegral . heightI     :: Game -> Float
 
 newGame :: IO Game
 newGame = return $ Game
-    {widthI     = windowWidthI
-    ,heightI    = windowHeightI
+    {view       = View{pos=(0,0),width=fromIntegral windowWidthI,height=fromIntegral windowHeightI}
     ,movement   = Hold
-    ,player     = Plane {position=(0,0),velocity=(1,0),angle=0,movement=Hold}
+    ,player     = Plane {position=(0,10),velocity=(1,0),angle=0,movement=Hold,planeType=1}
     ,otherPlanes =
-        [Plane {position=(0,5),velocity=(0.8,0),angle=0,movement=Hold}
+        [Plane {position=(0,5),velocity=(0.8,0),angle=0,movement=Hold,planeType=0}
         ]
     }
 
 
-input :: Event -> Game -> IO Game
-input event GameOver = return GameOver
-input event game = do
-    return $ case event of
-        EventResize(w,h)            -> game{widthI=w,heightI=h}
-        (EventKey key state _ _)    -> keyPress key state game
-        _                           -> game
+
+input :: Event -> Game -> Game
+input (EventResize s) game          = game{view=resize s (view game)}
+input (EventKey key state _ _) game@Game{} = keyPress key state game
+input event game = game
 
 
 upButtons = [SpecialKey(KeyUp)]
@@ -65,14 +62,11 @@ keyPress key state game = game {
             else id
 
 
-sky = png "images/background.png"
--- grass = scale (1/20) (1/20) $ png "images/background_grass.png"
-
 
 render :: Game -> Picture
-render GameOver = pictures [background, endscreen]
+render GameOver{view=view@View{..},..} = pictures [background, endscreen]
     where
-        background = rectangleSolid 10000 10000
+        background = translate (-(left view)/2) (-(bottom view)/2) $ rectangleSolid width height
         endscreen = color white $ translate (-400) (-50) $ text "Game Over!"
 
 
@@ -82,25 +76,26 @@ render game@Game{..} = do
     let scene   = pictures planes
     let (x,y)   = negV $ position player
 
-    pictures [sky, scale 20 20 $ translate x y $ pictures [scene]]
+    pictures [drawWorld view, scale 20 20 $ translate x y $ pictures [scene]]
 
     where
         pos = position player
         draw    = drawPlane 
         bgRect  = color (greyN 0.5) $!
-             rectangleSolid (width game) (height game)
+             rectangleSolid (width view) (height view)
 
 
 
 update :: Float -> Game -> IO Game
-update time GameOver = return GameOver
+update time game@GameOver{} = return game
 
 update time game@Game{..} = do
     if collides World newPlayer then
-        return GameOver
+        return GameOver{view=view}
     else return $ game
         { player=newPlayer
         , otherPlanes = updatePlane time `map` otherPlanes
+        , view=view {pos = position newPlayer}
         }
     where
         newPlayer = updatePlane time player
@@ -111,6 +106,6 @@ main = do
 
     game <- newGame
 
-    playIO window white 60 game (return.render) input update
+    playIO window white 60 game (return.render) (\a b -> return $ input a b) update
 
 
