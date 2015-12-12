@@ -17,6 +17,7 @@ cabal-version:       >=1.10
 
 executable ld34
   main-is:             Main.hs
+  default-extensions: RecordWildCards
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.8 && <4.9,
