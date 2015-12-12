@@ -30,7 +30,7 @@ newGame :: IO Game
 newGame = return $ Game
     {view       = View{pos=(0,0),width=fromIntegral windowWidthI,height=fromIntegral windowHeightI}
     ,movement   = Hold
-    ,player     = Plane {position=(0,10),velocity=(1,0),angle=0,movement=Hold,planeType=1}
+    ,player     = Plane {position=(0,10),velocity=(20,0),angle=0,movement=Hold,planeType=1}
     ,otherPlanes =
         [Plane {position=(0,5),velocity=(0.8,0),angle=0,movement=Hold,planeType=0}
         ]
@@ -91,7 +91,7 @@ update time game@GameOver{} = return game
 
 update time game@Game{..} = do
     if collides World newPlayer then
-        return GameOver{view=view}
+        return GameOver{view=View{pos=(0,0),width=width view,height=height view}}
     else return $ game
         { player=newPlayer
         , otherPlanes = updatePlane time `map` otherPlanes

@@ -49,18 +49,24 @@ drawPlane Plane{..} =
     where (x,y) = position
 
 
+planeThrust = 9
+drag        = 0.99
+planeLift   = 1.0
+
 updatePlane :: Float -> Plane -> Plane
 updatePlane time plane@Plane{..} = 
     plane
         {angle      = newAngle
         ,position   = position `addV` (time `mulSV` velocity)
         -- first just a stupid calculation
-        ,velocity   = 10 `mulSV` unitVectorAtAngle angleRad
+        ,velocity   = drag `mulSV` velocity `addV` acceleration `addV` gravity `addV` lift
     }
     where
-        newAngle = angle + movementToFactor movement * time * 45
-        angleRad = newAngle * pi/180
-
+        newAngle    = angle + movementToFactor movement * time * 45
+        angleRad    = newAngle * pi/180
+        acceleration    = planeThrust*time `mulSV` unitVectorAtAngle angleRad
+        gravity     = 10*time `mulSV` (0,-1)
+        lift        = (planeLift*((1,0) `dotV` acceleration)) `mulSV` (0,1)
 
 planes = scale 0.1 0.1 `map` [png $ "images/plane" ++ show i ++ ".png" | i <- [0..]]
 
