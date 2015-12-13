@@ -23,11 +23,13 @@ drawWorld :: View -> Picture
 drawWorld view = pictures[sky, horizon, ground]
     where
         ground = repeatX 800 view $ translate 400 0 $ png "images/background_grass.png"
-        horizon = repeatX 8000 view $ scale 10 10 $ translate 400 300 $ png "images/background.png"
+        horizon = repeatX 2000 view $ scale 5 5 $ translate 400 300 $ png "images/background.png"
         sky = repeatY 6000 view $ repeatX 8000 view $ scale 10 10 $ translate 400 300 $ png "images/background_sky.png"
 
 
 collides world plane = y<0
     where
         (x,y) = position plane
+
+
 

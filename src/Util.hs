@@ -13,3 +13,7 @@ negV = mulSV (-1)
 
 subV :: Vector -> Vector -> Vector
 subV v0 v1 = addV v0 (negV v1)
+
+
+distV :: Vector -> Vector -> Float
+distV a b = magV (a `subV` b)

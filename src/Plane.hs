@@ -49,6 +49,14 @@ drawPlane Plane{..} =
     where (x,y) = position
 
 
+
+{-
+ - These formulas are complete crap
+ -
+ - they are physically incorrect but they are simple
+ - and they are a lot of fun
+-}
+
 planeThrust = 9
 drag        = 0.99
 planeLift   = 1.0
@@ -62,11 +70,13 @@ updatePlane time plane@Plane{..} =
         ,velocity   = drag `mulSV` velocity `addV` acceleration `addV` gravity `addV` lift
     }
     where
+        (_,height)  = position
         newAngle    = angle + movementToFactor movement * time * 45
         angleRad    = newAngle * pi/180
         acceleration    = planeThrust*time `mulSV` unitVectorAtAngle angleRad
         gravity     = 10*time `mulSV` (0,-1)
-        lift        = (planeLift*((1,0) `dotV` acceleration)) `mulSV` (0,1)
+        lift        = ((planeLift*((1,0) `dotV` acceleration))*(clamp 0 ((150-height)**2/50) 1)) `mulSV` (0,1)
 
 planes = scale 0.1 0.1 `map` [png $ "images/plane" ++ show i ++ ".png" | i <- [0..]]
 
+clamp a b c = max a (min b c)
