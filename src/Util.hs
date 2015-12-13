@@ -1,5 +1,6 @@
 module Util
 (addV,negV,subV
+,distV
 ) where
 
 import Graphics.Gloss.Data.Vector

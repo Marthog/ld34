@@ -25,6 +25,8 @@ executable ld34
                     mtl,
                     gloss-game,
                     random,
-                    containers
+                    containers,
+                    normaldistribution
   hs-source-dirs:      src
   default-language:    Haskell2010
+  ghc-options   : -O2 -threaded -rtsopts -with-rtsopts=-N4
