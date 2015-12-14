@@ -110,7 +110,7 @@ render game@Game{..} = do
 
 
 main = do
-    let window = InWindow "Ludum Dare 34" (100, 100) (windowWidthI, windowHeightI)
+    let window = InWindow "Ludum Dare 34" (windowWidthI, windowHeightI) (100, 100)
 
     let game = newGame windowWidthI windowHeightI
 
