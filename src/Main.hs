@@ -27,7 +27,7 @@ input (EventKey (SpecialKey KeySpace) Up _ _)   game@Game{..} = do
         (x,y) = position player
 input (EventResize s) game          = return $ game{view=resize s (view game)}
 input (EventKey key state _ _) game@Game{} = return $ keyPress key state game
-input (EventKey (SpecialKey key) state _ _) game@GameOver{..} =
+input (EventKey (SpecialKey key) Up _ _) game@GameOver{..} =
     return $ case key of
         KeyUp   -> game{level=level+1}
         KeyDown -> game{level=max 0 $ level-1}
@@ -78,16 +78,21 @@ drawUI fuel score view = translate ((-width view)/2+size+10) ((-height view)/2+s
 
 
 render :: Game -> Picture
-render GameOver{view=view@View{..},..} = pictures [background, endscreen, next]
+render GameOver{view=view@View{..},..} = pictures [background, introduction, endscreen, next]
     where
         background = translate (-(left view)/2) (-(bottom view)/2) $ rectangleSolid width height
-        endscreen = color white $ translate (-400) 0 $ multiline [mainText, scoreS]
+        endscreen = if first then blank else color white $ translate (-400) 200 $ multiline [mainText, scoreS]
         mainText = if victory then "Target reached!" else "Failed!"
         scoreS = "Score: " ++ show score
         next = color white $ translate (-400) (-200) $ scale 0.2 0.2 $ multiline
             ["Next level: " ++ show level
             , "press Up for next, Down for previous"
             , "Start on Enter"]
+        introduction = translate (-400) (-50) $ color white $ scale 0.2 0.2 $ multiline
+            ["Press Up and Down to turn the plane"
+            ,"Don't run out of fuel"
+            ,"Avoid the bombs"
+            ,"Too much fuel will make you too heavy"]
 
 render game@Game{..} = do
     --let background = drawWorld (world game) (rectangle game)
