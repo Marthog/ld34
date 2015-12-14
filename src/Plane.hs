@@ -6,6 +6,7 @@ module Plane
     ,updatePlane
 ) where
 
+import Control.Monad.State
 
 import Graphics.Gloss.Data.Vector
 import Graphics.Gloss
@@ -40,6 +41,8 @@ data Plane = Plane
     ,angle              :: !Float
     ,movement           :: !PlaneMovement
     ,planeType          :: !Int
+    ,fuel               :: !Float
+    ,willDie            :: !Bool
     }
 
 
@@ -57,8 +60,9 @@ drawPlane Plane{..} =
  - and they are a lot of fun
 -}
 
-planeThrust = 9
-drag        = 0.99
+planeThrust = 13000
+mass = 1000
+drag        = 0.985
 planeLift   = 1.0
 
 updatePlane :: Float -> Vector -> Plane -> Plane
@@ -67,18 +71,30 @@ updatePlane time wind plane@Plane{..} =
         {angle      = newAngle
         ,position   = position `addV` (time `mulSV` airSpeed)
         -- first just a stupid calculation
-        ,velocity   = drag `mulSV` velocity `addV` acceleration `addV` gravity `addV` lift
+        ,velocity   = drag `mulSV` (velocity `addV` acceleration `addV` gravity `addV` lift)
+        ,fuel       = max 0 $ fuel-time
     }
     where
+        thrust      = if willDie || fuel<=0 then 0 else planeThrust 
         (_,height)  = position
-        newAngle    = angle + movementToFactor movement * time * 45
+        newAngle    = angle + if willDie then 0 else movementToFactor movement * time * 45
         airSpeed    = wind `addV` velocity
         angleRad    = newAngle * pi/180
-        acceleration    = planeThrust*time `mulSV` unitVectorAtAngle angleRad
+        currentMass = mass+(fuel*10)
+        acceleration    = (thrust*time/currentMass) `mulSV` unitVectorAtAngle angleRad
         gravity     = 10*time `mulSV` (0,-1)
         lift        = ((planeLift*((1,0) `dotV` acceleration))*(clamp 0 ((150-height)**2/50) 1)) `mulSV` (0,1)
 
 
+{-
+updatePlaneRun :: Float -> Vector -> State Plane ()
+updatePlaneRun time wind = do
+    angle       <- gets angle
+    moveFactor  <- movementToFactor `fmap` gets movement
+    let newAngle    = angle +  moveFactor * time * 45
+    modify $ \p -> p{angle=newAngle}
+-}
+ 
 
 planes = scale 0.1 0.1 `map` [png $ "images/plane" ++ show i ++ ".png" | i <- [0..]]
 
